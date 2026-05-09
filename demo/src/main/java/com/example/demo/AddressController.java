@@ -27,4 +27,12 @@ public class AddressController {
     public void Addresses(@RequestBody Address address) {
         this.addresses.add(address);
     }
+
+    @DeleteMapping("/address/{cep}")
+    public ResponseEntity<Void> deleteAddress(@PathVariable String cep) {
+        boolean removed = addresses.removeIf(a -> a.getCep().equals(cep));
+        return removed
+                ? ResponseEntity.noContent().build()
+                : ResponseEntity.notFound().build();
+    }
 }

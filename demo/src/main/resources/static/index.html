@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Testando API Restful</title>
+</head>
+<body>
+<form>
+    <h1>Testando API Restful</h1>
+
+    <label>CEP</label>
+    <input type="text" id="cep" placeholder="38400100">
+
+    <label>Rua:</label>
+    <input type="text" id="rua">
+
+    <label>Bairro:</label>
+    <input type="text" id="bairro">
+
+    <label>Cidade:</label>
+    <input type="text" id="cidade">
+
+    <button type="button" onclick="buscarPorCep()">Buscar endereço pelo CEP (GET)</button>
+    <button type="button" onclick="criarEndereco()">Criar novo (POST)</button>
+    <button type="button" onclick="apagarPorCep()">Apagar pelo CEP (DELETE)</button>
+    <button type="button" onclick="listarTodos()">Listar todos os endereços</button>
+
+    <div id="resultado"></div>
+</form>
+
+<script>
+    const API = 'http://localhost:8080';
+
+    async function buscarPorCep() {
+        const cep = document.getElementById('cep').value;
+        const res = await fetch(`${API}/address`);
+        const lista = await res.json();
+        const encontrado = lista.find(a => a.cep === cep);
+        if (encontrado) {
+            document.getElementById('rua').value = encontrado.rua;
+            document.getElementById('bairro').value = encontrado.bairro;
+            document.getElementById('cidade').value = encontrado.cidade;
+            mostrar(encontrado);
+        } else {
+            mostrar('Endereço não encontrado.');
+        }
+    }
+
+    async function criarEndereco() {
+        const body = {
+            rua: document.getElementById('rua').value,
+            cep: document.getElementById('cep').value,
+            bairro: document.getElementById('bairro').value,
+            cidade: document.getElementById('cidade').value
+        };
+        const res = await fetch(`${API}/address`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+        mostrar(res.ok ? 'Endereço criado com sucesso!' : 'Erro ao criar.');
+    }
+
+    async function apagarPorCep() {
+        const cep = document.getElementById('cep').value;
+        const res = await fetch(`${API}/address/${cep}`, { method: 'DELETE' });
+        mostrar(res.ok ? 'Endereço apagado!' : 'CEP não encontrado.');
+    }
+
+    async function listarTodos() {
+        const res = await fetch(`${API}/address`);
+        const lista = await res.json();
+        mostrar(lista);
+    }
+
+    function mostrar(dados) {
+        document.getElementById('resultado').innerText =
+            typeof dados === 'object' ? JSON.stringify(dados, null, 2) : dados;
+    }
+</script>
+</body>
+</html>
